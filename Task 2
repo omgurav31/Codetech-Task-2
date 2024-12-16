@@ -1,0 +1,137 @@
+import os
+
+# Global configuration
+LIBRARY_FILE = "library.txt"
+
+# Utility function to load items from the file
+def load_items():
+    items = {}
+    if os.path.exists(LIBRARY_FILE):
+        with open(LIBRARY_FILE, "r") as file:
+            for line in file:
+                try:
+                    title, author, category, status = line.strip().split(",")
+                    items[title] = {
+                        "author": author,
+                        "category": category,
+                        "status": status
+                    }
+                except ValueError:
+                    print(f"Skipping invalid line in library file: {line}")
+    else:
+        print(f"File '{LIBRARY_FILE}' not found. Starting with an empty library.")
+    return items
+
+# Utility function to save items to the file
+def save_items(items):
+    with open(LIBRARY_FILE, "w") as file:
+        for title, info in items.items():
+            file.write(f"{title},{info['author']},{info['category']},{info['status']}\n")
+
+# Display items in a simple table format
+def display_items(items):
+    if not items:
+        print("No items in the library.")
+        return
+
+    print("\n{:<30} {:<20} {:<15} {:<10}".format("Title", "Author", "Category", "Status"))
+    print("-" * 80)
+    for title, info in items.items():
+        print(f"{title:<30} {info['author']:<20} {info['category']:<15} {info['status']:<10}")
+
+# Add a new item to the library
+def add_item(items):
+    title = input("Enter title: ").strip()
+    if not title:
+        print("Title cannot be empty!")
+        return
+    if title in items:
+        print("Item already exists!")
+        return
+    author = input("Enter author: ").strip()
+    category = input("Enter category (Book/Magazine/DVD): ").strip()
+    items[title] = {
+        "author": author,
+        "category": category,
+        "status": "Available"
+    }
+    save_items(items)
+    print(f"{title} added successfully!")
+
+# Check out an item
+def check_out_item(items):
+    title = input("Enter title to check out: ").strip()
+    if title in items and items[title]["status"] == "Available":
+        items[title]["status"] = "Checked Out"
+        save_items(items)
+        print(f"{title} checked out successfully!")
+    elif title in items:
+        print(f"{title} is already checked out.")
+    else:
+        print("Item not found!")
+
+# Return an item
+def return_item(items):
+    title = input("Enter title to return: ").strip()
+    if title in items and items[title]["status"] == "Checked Out":
+        items[title]["status"] = "Available"
+        save_items(items)
+        print(f"{title} returned successfully!")
+    elif title in items:
+        print(f"{title} is already available.")
+    else:
+        print("Item not found!")
+
+# Search for items by title, author, or category
+def search_items(items):
+    query = input("Enter search query (title/author/category): ").strip().lower()
+    results = {
+        title: info
+        for title, info in items.items()
+        if query in title.lower() or query in info["author"].lower() or query in info["category"].lower()
+    }
+    if results:
+        display_items(results)
+    else:
+        print("No matching items found.")
+
+# Main menu
+def main():
+    items = load_items()
+
+    while True:
+        print("\nLibrary Management System Menu:")
+        print("1. Add item")
+        print("2. Check out item")
+        print("3. Return item")
+        print("4. Display items")
+        print("5. Search items")
+        print("6. Exit")
+        choice = input("Enter your choice: ").strip()
+
+        if choice == "1":
+            add_item(items)
+        elif choice == "2":
+            check_out_item(items)
+        elif choice == "3":
+            return_item(items)
+        elif choice == "4":
+            display_items(items)
+        elif choice == "5":
+            search_items(items)
+        elif choice == "6":
+            while True:
+                confirm = input("Are you sure you want to exit? (y/n): ").strip().lower()
+                if confirm == "y":
+                    print("Exiting the program. Goodbye!")
+                    return
+                elif confirm == "n":
+                    break
+                else:
+                    print("Invalid input. Please enter 'y' or 'n'.")
+        else:
+            print("Invalid choice. Please try again.")
+
+# Running the program
+if __name__ == "__main__":
+    main()
